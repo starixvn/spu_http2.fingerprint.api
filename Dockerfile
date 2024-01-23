@@ -1,7 +1,5 @@
 FROM golang:latest
 
-RUN apk add build-base
-RUN apk add libpcap-dev
 WORKDIR /app
 
 COPY go.mod go.sum config.json ./

@@ -113,6 +113,7 @@ func StartRedirectServer(host, port string) {
 	log.Println("Listening on", host+":"+port)
 
 	http.HandleFunc("/", redirect)
+	http.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) { w.Write([]byte("OK")) })
 	err := http.ListenAndServe(host+":"+port, nil)
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
