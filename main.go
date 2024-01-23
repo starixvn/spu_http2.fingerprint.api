@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"net/http"
 	"time"
 )
 
@@ -93,6 +94,31 @@ func (c *Config) LoadFromFile() error {
 	return nil
 }
 
+func redirect(w http.ResponseWriter, r *http.Request) {
+
+	target := "https://" + r.Host + r.URL.Path
+	if len(r.URL.RawQuery) > 0 {
+		target += "?" + r.URL.RawQuery
+	}
+	http.Redirect(w, r, target, http.StatusTemporaryRedirect)
+
+}
+
+func StartRedirectServer(host, port string) {
+	// Starts an HTTP server on port 80 that redirects to the HTTPS server on port 443
+
+	local = host == "" && port != "443"
+
+	log.Println("Starting Redirect Server")
+	log.Println("Listening on", host+":"+port)
+
+	http.HandleFunc("/", redirect)
+	err := http.ListenAndServe(host+":"+port, nil)
+	if err != nil {
+		log.Fatal("ListenAndServe: ", err)
+	}
+}
+
 func main() {
 
 	log.Println("Starting server...")
@@ -120,6 +146,7 @@ func main() {
 	}
 
 	defer listener.Close()
+	go StartRedirectServer(c.Host, c.HTTPPort)
 
 	for {
 		conn, err := listener.Accept()
@@ -134,7 +161,6 @@ func main() {
 				conn.Close()
 			}
 		}()
-
 	}
 
 }
