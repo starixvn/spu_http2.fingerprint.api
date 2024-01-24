@@ -100,6 +100,7 @@ func redirect(w http.ResponseWriter, r *http.Request) {
 	if len(r.URL.RawQuery) > 0 {
 		target += "?" + r.URL.RawQuery
 	}
+	log.Println(target)
 	http.Redirect(w, r, target, http.StatusTemporaryRedirect)
 
 }
@@ -113,7 +114,19 @@ func StartRedirectServer(host, port string) {
 	log.Println("Listening on", host+":"+port)
 
 	http.HandleFunc("/", redirect)
-	http.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) { w.Write([]byte("OK")) })
+	http.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
+		addr := r.Context().Value(http.LocalAddrContextKey)
+
+		netAddr, ok := addr.(net.Addr)
+		if !ok {
+			w.Write([]byte("fail"))
+		}
+		ip, port, err := net.SplitHostPort(netAddr.String())
+		w.Write([]byte(ip + ":" + port))
+		if err != nil {
+			w.Write([]byte("fail"))
+		}
+	})
 	err := http.ListenAndServe(host+":"+port, nil)
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
