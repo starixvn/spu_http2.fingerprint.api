@@ -8,6 +8,8 @@ import (
 	"net"
 	"net/http"
 	"time"
+
+	"github.com/redis/go-redis/v9"
 )
 
 var cert tls.Certificate
@@ -15,11 +17,15 @@ var c *Config = &Config{}
 var local = false
 
 type Config struct {
-	TLSPort  string `json:"tls_port"`
-	HTTPPort string `json:"http_port"`
-	CertFile string `json:"cert_file"`
-	KeyFile  string `json:"key_file"`
-	Host     string `json:"host"`
+	TLSPort       string `json:"tls_port"`
+	HTTPPort      string `json:"http_port"`
+	CertFile      string `json:"cert_file"`
+	KeyFile       string `json:"key_file"`
+	Host          string `json:"host"`
+	RedisHost     string `json:"redis_host"`
+	RedisPassword string `json:"redis_password"`
+	RedisDB       int    `json:"redis_db"`
+	RedisEnable   bool   `json:"redis_enable"`
 }
 
 type Priority struct {
@@ -90,6 +96,10 @@ func (c *Config) LoadFromFile() error {
 	c.HTTPPort = tmp.HTTPPort
 	c.CertFile = tmp.CertFile
 	c.KeyFile = tmp.KeyFile
+	c.RedisHost = tmp.RedisHost
+	c.RedisPassword = tmp.RedisPassword
+	c.RedisDB = tmp.RedisDB
+	c.RedisEnable = tmp.RedisEnable
 
 	return nil
 }
@@ -132,6 +142,26 @@ func StartRedirectServer(host, port string) {
 	}
 }
 
+func StartRedisServer(host, pass string, db int) {
+	log.Println("Starting Redis Server")
+	log.Println("Listening on", host)
+
+	// Create a Redis client
+	client := redis.NewClient(&redis.Options{
+		Addr:     host, // Redis server address
+		Password: pass, // No password
+		DB:       db,   // Default DB
+
+	})
+
+	// Close the connection when the main function exits
+	defer func() {
+		if err := client.Close(); err != nil {
+			log.Fatal(err)
+		}
+	}()
+}
+
 func main() {
 
 	log.Println("Starting server...")
@@ -160,6 +190,10 @@ func main() {
 
 	defer listener.Close()
 	go StartRedirectServer(c.Host, c.HTTPPort)
+
+	if c.RedisEnable {
+		go StartRedisServer(c.RedisHost, c.RedisPassword, c.RedisDB)
+	}
 
 	for {
 		conn, err := listener.Accept()

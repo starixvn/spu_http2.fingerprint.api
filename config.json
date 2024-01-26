@@ -3,5 +3,9 @@
   "http_port": "80",
   "cert_file": "certs/chain.pem",
   "key_file": "certs/key.pem",
-  "host": "0.0.0.0" 
+  "host": "0.0.0.0",
+  "redis_host": "10.18.200.131:16379",
+  "redis_password": "foo1@bared",
+  "redis_db": 14,
+  "redis_enable": false
 }
