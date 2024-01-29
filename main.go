@@ -105,13 +105,15 @@ func (c *Config) LoadFromFile() error {
 }
 
 func redirect(w http.ResponseWriter, r *http.Request) {
+	/*
+		target := "https://" + r.Host + r.URL.Path
+		if len(r.URL.RawQuery) > 0 {
+			target += "?" + r.URL.RawQuery
+		}
 
-	target := "https://" + r.Host + r.URL.Path
-	if len(r.URL.RawQuery) > 0 {
-		target += "?" + r.URL.RawQuery
-	}
-
-	http.Redirect(w, r, target, http.StatusTemporaryRedirect)
+		http.Redirect(w, r, target, http.StatusTemporaryRedirect)
+	*/
+	w.Write([]byte("this is a redirect server"))
 }
 
 func StartRedirectServer(host, port string) {
