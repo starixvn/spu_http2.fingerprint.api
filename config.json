@@ -1,6 +1,6 @@
 {  
-  "tls_port": "8443",
-  "http_port": "8090",
+  "tls_port": "5000",
+  "http_port": "5099",
   "cert_file": "certs/chain.pem",
   "key_file": "certs/key.pem",
   "host": "0.0.0.0",
