@@ -113,7 +113,7 @@ func redirect(w http.ResponseWriter, r *http.Request) {
 
 		http.Redirect(w, r, target, http.StatusTemporaryRedirect)
 	*/
-	w.Write([]byte("this is a redirect server"))
+	w.Write([]byte("OK"))
 }
 
 func StartRedirectServer(host, port string) {
@@ -126,17 +126,7 @@ func StartRedirectServer(host, port string) {
 
 	http.HandleFunc("/", redirect)
 	http.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
-		addr := r.Context().Value(http.LocalAddrContextKey)
-
-		netAddr, ok := addr.(net.Addr)
-		if !ok {
-			w.Write([]byte("fail"))
-		}
-		ip, port, err := net.SplitHostPort(netAddr.String())
-		w.Write([]byte(ip + ":" + port))
-		if err != nil {
-			w.Write([]byte("fail"))
-		}
+		w.Write([]byte("OK"))
 	})
 	err := http.ListenAndServe(host+":"+port, nil)
 	if err != nil {

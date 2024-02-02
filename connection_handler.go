@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net"
@@ -195,7 +196,7 @@ func handleHTTP2(conn net.Conn) {
 		} else if frame.Type == "ERROR" {
 			return
 		}
-		// log.Println(frame)
+		//log.Println(frame)
 		frames = append(frames, frame)
 		if frame.Type == "HEADERS" {
 			headerFrame = frame
@@ -221,6 +222,7 @@ func handleHTTP2(conn net.Conn) {
 			userAgent = strings.Split(h, ": ")[1]
 		}
 	}
+	//log.Println(frames)
 	var fp = GetAkamaiFingerprint(frames)
 
 	resp := Response{
@@ -256,8 +258,14 @@ func handleHTTP2(conn net.Conn) {
 		log.Println("could not write headers: ", err)
 		return
 	}
+	respBytes, err := json.Marshal(resp)
 
-	chunks := splitBytesIntoChunks([]byte("OK"), 1024)
+	if err != nil {
+		print(err)
+		return
+	}
+
+	chunks := splitBytesIntoChunks(respBytes, 1024)
 	for _, c := range chunks {
 		fr.WriteData(headerFrame.Stream, false, c)
 	}
